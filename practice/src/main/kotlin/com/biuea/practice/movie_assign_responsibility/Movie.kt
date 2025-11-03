@@ -24,6 +24,10 @@ class Movie(
     private fun isDiscountable(screening: Screening): Boolean {
         return _discountConditions.any { it.isSatisfiedBy(screening) }
     }
+
+    private fun calculateDiscountAmount(): Money {
+        return Money.ZERO
+    }
 }
 
 enum class MovieType {
