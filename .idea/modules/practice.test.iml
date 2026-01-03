@@ -55,6 +55,10 @@
       <sourceFolder url="file://$MODULE_DIR$/../../practice/src/test/kotlin" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../practice/src/test/resources" type="java-test-resource" />
     </content>
+    <content url="file://$MODULE_DIR$/../../practice/src/test">
+      <sourceFolder url="file://$MODULE_DIR$/../../practice/src/test/kotlin" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../practice/src/test/resources" type="java-test-resource" />
+    </content>
     <orderEntry type="jdk" jdkName="corretto-17" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="practice.main" />
