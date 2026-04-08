@@ -213,6 +213,108 @@ context.set("request-2");
 pool.submit(() -> System.out.println(context.get())); // "request-1" (스레드 재사용, 갱신 안 됨!)
 ```
 
+#### 4. 웹플럭스(Reactor)에서의 스레드 전환 문제
+
+웹플럭스는 이벤트 루프 기반으로 동작하며, **하나의 요청이 여러 스레드에 걸쳐 처리**된다. Reactor의 연산자 체인에서 `subscribeOn`, `publishOn` 등으로 스레드가 전환되면 ThreadLocal 값이 유실된다.
+
+```java
+private static final ThreadLocal<String> userContext = new ThreadLocal<>();
+
+@GetMapping("/user")
+public Mono<String> getUser() {
+    userContext.set("userA");  // nio-thread-1에서 설정
+
+    return Mono.fromCallable(() -> {
+            // boundedElastic-1에서 실행 → 다른 스레드!
+            String user = userContext.get(); // null 반환!
+            return "사용자: " + user;
+        })
+        .subscribeOn(Schedulers.boundedElastic());
+}
+```
+
+```
+요청 처리 흐름:
+
+nio-thread-1                    boundedElastic-1
+┌──────────────┐               ┌──────────────┐
+│ ThreadLocal   │               │ ThreadLocal   │
+│ "userA"       │  ──스레드──→  │ null          │  ← 값 유실!
+└──────────────┘   전환 발생    └──────────────┘
+```
+
+Reactor는 이 문제를 해결하기 위해 자체적인 `Context`를 제공한다. Reactor Context는 구독자 체인을 따라 전파되므로, 스레드 전환과 무관하게 값을 유지할 수 있다.
+
+```java
+@GetMapping("/user")
+public Mono<String> getUser() {
+    return Mono.deferContextual(ctx -> {
+            String user = ctx.get("user"); // 스레드 전환과 무관하게 접근 가능
+            return Mono.just("사용자: " + user);
+        })
+        .subscribeOn(Schedulers.boundedElastic())
+        .contextWrite(Context.of("user", "userA")); // Context에 값 설정
+}
+```
+
+| 구분 | ThreadLocal | Reactor Context |
+|------|-------------|-----------------|
+| 전파 단위 | 스레드 | 구독자 체인 (Subscription) |
+| 스레드 전환 시 | 값 유실 | 유지 |
+| 흐름 방향 | 설정한 스레드 내에서만 | 하류 → 상류 (contextWrite는 체인 아래에서 위로 전파) |
+
+#### 5. 코루틴에서의 디스패처 전환 문제
+
+코루틴도 유사한 문제가 발생한다. 코루틴은 중단(suspend)과 재개(resume) 시 **다른 스레드에서 실행**될 수 있으며, 디스패처 전환 시 ThreadLocal 값이 유실된다.
+
+```kotlin
+private val userContext = ThreadLocal<String>()
+
+suspend fun handleRequest() {
+    userContext.set("userA")  // DefaultDispatcher-worker-1에서 설정
+
+    withContext(Dispatchers.IO) {
+        // DefaultDispatcher-worker-3에서 실행 → 다른 스레드!
+        println(userContext.get()) // null 반환!
+    }
+}
+```
+
+```
+코루틴 실행 흐름:
+
+worker-1 (Default)              worker-3 (IO)
+┌──────────────┐               ┌──────────────┐
+│ ThreadLocal   │  withContext   │ ThreadLocal   │
+│ "userA"       │  ──(전환)──→  │ null          │  ← 값 유실!
+└──────────────┘               └──────────────┘
+```
+
+코틀린은 `ThreadLocal.asContextElement()`를 제공하여, 코루틴 컨텍스트에 ThreadLocal 값을 바인딩할 수 있다. 코루틴이 재개될 때마다 해당 스레드의 ThreadLocal에 값을 자동으로 복원해준다.
+
+```kotlin
+private val userContext = ThreadLocal<String>()
+
+suspend fun handleRequest() {
+    withContext(userContext.asContextElement("userA")) {
+        println(userContext.get()) // "userA" 출력
+
+        withContext(Dispatchers.IO) {
+            println(userContext.get()) // "userA" 출력 — 스레드 전환에도 유지!
+        }
+    }
+}
+```
+
+`asContextElement`의 동작 원리는 다음과 같다.
+
+```
+코루틴 재개 시: ThreadLocal.set(저장된 값)  ← 스레드에 값 복원
+코루틴 중단 시: ThreadLocal.remove()        ← 스레드에서 값 제거
+```
+
+다만, 코루틴이 많아질수록 매번 set/remove가 반복되므로 성능 오버헤드가 있다. 대량의 코루틴 환경에서는 코루틴 컨텍스트(`CoroutineContext`)를 직접 활용하는 것이 더 적합하다.
+
 ---
 
 ## 사용처
