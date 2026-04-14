@@ -1,0 +1,566 @@
+{
+  "redis_study/03_데이터_타입과_명령어.md": {
+    "review_count": 1,
+    "created": "2026-04-14",
+    "last_reviewed": "2026-04-14",
+    "next_review": "2026-04-17"
+  },
+  "object/composition.md": {
+    "review_count": 1,
+    "created": "2026-04-14",
+    "last_reviewed": "2026-04-14",
+    "next_review": "2026-04-17"
+  },
+  "ddd/ddd_전략적설계.md": {
+    "review_count": 1,
+    "created": "2026-04-14",
+    "last_reviewed": "2026-04-14",
+    "next_review": "2026-04-17"
+  },
+  "designpattern/srp.md": {
+    "review_count": 1,
+    "created": "2026-04-14",
+    "last_reviewed": "2026-04-14",
+    "next_review": "2026-04-17"
+  },
+  "spring/spring_bean.md": {
+    "review_count": 1,
+    "created": "2026-04-14",
+    "last_reviewed": "2026-04-14",
+    "next_review": "2026-04-17"
+  },
+  "redis_study/07_Spring_Cache_Session_실전패턴.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-15"
+  },
+  "redis_study/distributed_lock.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-15"
+  },
+  "kotlin/coroutine.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-15"
+  },
+  "spring/transaction.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-15"
+  },
+  "ddd_study/05_전술적_설계_Aggregate.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-15"
+  },
+  "kafka/consumer_retry.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-16"
+  },
+  "redis/레디스_개요_아키텍쳐.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-16"
+  },
+  "object/dependency.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-16"
+  },
+  "ai/ai_orchestration.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-16"
+  },
+  "ddd_study/10_실전_패턴과_안티패턴.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-16"
+  },
+  "object/message_and_interface.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-17"
+  },
+  "network/http.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-17"
+  },
+  "spring/date_format.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-17"
+  },
+  "mysql/bufferpool_and_redolog.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-17"
+  },
+  "jvm/process_thread_cost.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-17"
+  },
+  "ddd_study/07_Application_Service와_CQRS.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-18"
+  },
+  "mysql/복합인덱스.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-18"
+  },
+  "java/io_stream.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-18"
+  },
+  "redis_study/01_Redis_개요와_아키텍처.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-18"
+  },
+  "ddd_study/04_전술적_설계_Entity_Value_Object.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-18"
+  },
+  "jvm/자바스레드.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-19"
+  },
+  "java/fork_join_pool.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-19"
+  },
+  "network/http_method_idempotency.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-19"
+  },
+  "spring/hikaricp.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-19"
+  },
+  "spring/local_cache.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-19"
+  },
+  "network/restful.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-20"
+  },
+  "object/movie_data_oriented.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-20"
+  },
+  "jvm/jvm_heap.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-20"
+  },
+  "mysql/cluster_index.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-20"
+  },
+  "redis_study/06_Spring_Data_Redis_기초.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-20"
+  },
+  "java/string_types.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-21"
+  },
+  "ddd_study/06_전술적_설계_Repository_Service_Event.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-21"
+  },
+  "kafka/kafka_listener.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-21"
+  },
+  "object/movie_assign_responsibility.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-21"
+  },
+  "designpattern/facade.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-21"
+  },
+  "spring/tomcat_thread_pool.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-22"
+  },
+  "object/role_responsibility_collaboration.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-22"
+  },
+  "mysql/block_io.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-22"
+  },
+  "ddd_study/08_헥사고날_아키텍처와_DDD.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-22"
+  },
+  "ddd_study/09_Event_Storming.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-22"
+  },
+  "spring/spring_mvc.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-23"
+  },
+  "java/virtual_thread.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-23"
+  },
+  "kafka/publishing_message.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-23"
+  },
+  "redis_study/04_영속성과_복제.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-23"
+  },
+  "network/vpn.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-23"
+  },
+  "object/movie.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-24"
+  },
+  "jvm/jvm_and_code_execution.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-24"
+  },
+  "jvm/volatile_synchronize.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-24"
+  },
+  "java/map.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-24"
+  },
+  "java/thread_local.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-24"
+  },
+  "jvm/jvm_options.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-25"
+  },
+  "network/uri_url_urn.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-25"
+  },
+  "mysql/partitioning.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-25"
+  },
+  "ddd_study/01_DDD_개요와_핵심_개념.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-25"
+  },
+  "kotlin/coroutine_channel.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-25"
+  },
+  "mysql/erd_notation.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-26"
+  },
+  "kotlin/inline_noinline_crossinline.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-26"
+  },
+  "object/inheritance_reuse_code.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-26"
+  },
+  "object/cooperation.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-26"
+  },
+  "spring/di_ioc.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-26"
+  },
+  "infra/monitoring.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-27"
+  },
+  "kafka/spring_kafka_consumer.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-27"
+  },
+  "jvm/compiler.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-27"
+  },
+  "network/was_ws.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-27"
+  },
+  "kafka/broker.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-27"
+  },
+  "object/subclassing_subtyping.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-28"
+  },
+  "spring/controller_rest_controller.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-28"
+  },
+  "object/ticket_app.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-28"
+  },
+  "object/pay.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-28"
+  },
+  "ddd_study/02_전략적_설계_서브도메인_디스틸레이션.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-28"
+  },
+  "network/proxy_load_balancing.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-29"
+  },
+  "infra/cloudflare.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-29"
+  },
+  "spring/spring_web_request.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-29"
+  },
+  "network/netty.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-29"
+  },
+  "mysql/lock.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-29"
+  },
+  "spring/valid.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-30"
+  },
+  "object/flexible.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-30"
+  },
+  "kafka/producer.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-30"
+  },
+  "designpattern/creation.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-30"
+  },
+  "redis_study/02_메모리_구조와_내부_자료구조.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-04-30"
+  },
+  "designpattern/structure.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-01"
+  },
+  "ddd_study/03_전략적_설계_Bounded_Context_Context_Mapping.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-01"
+  },
+  "kafka/message_queue.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-01"
+  },
+  "ddd/ddd_개요_핵심_개념.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-01"
+  },
+  "jvm/garbage_collector.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-01"
+  },
+  "jvm/jvm_jre_jdk.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-02"
+  },
+  "mysql/truncate_vs_delete.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-02"
+  },
+  "jvm/memory_and_memory_overflow.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-02"
+  },
+  "redis_study/05_트랜잭션_Lua_PubSub_성능.md": {
+    "review_count": 0,
+    "created": "2026-04-14",
+    "last_reviewed": null,
+    "next_review": "2026-05-02"
+  }
+}
