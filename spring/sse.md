@@ -383,10 +383,18 @@ class RedisSseBridge(
 }
 ```
 
-> **왜 비동기 IO(WebFlux/Reactor)가 권장될까?**
+> **WebFlux vs Spring MVC — SSE에서 무엇을 선택할까?**
 SSE는 동시 접속자 수 = 동시에 살아있는 connection 수다. 1000명이 구독 중이면 connection 1000개가 동시에 열려 있고, 대부분의 시간엔 아무 데이터도 흐르지 않는 idle 상태로 머무른다. Tomcat 같은 전통적 thread-per-request 모델은 connection 하나에 스레드 하나를 점유시키므로, 1000개 구독 = 1000개 스레드이고, 스레드 풀을 넘어서는 다른 요청은 막힌다.
-- WebFlux/Netty는 이벤트 루프 + 논블로킹 IO 기반이라 connection 수와 스레드 수가 분리된다. 수천~수만 개의 connection을 적은 수의 IO 스레드로 다룰 수 있어, "오래 열려 있지만 자주 비어 있는" SSE 패턴에 가장 잘 맞는다.
-- Spring MVC + `SseEmitter`도 비동기로 처리되긴 하지만, 내부적으로 servlet async + 컨테이너 워커 스레드를 쓰기 때문에 동시성 한계를 결국 servlet 컨테이너 설정에 종속시킨다.
+- WebFlux/Netty는 이벤트 루프 + 논블로킹 IO 기반이라 connection 수와 스레드 수가 분리된다. 수천~수만 개의 connection을 적은 수의 IO 스레드로 다룰 수 있어, "오래 열려 있지만 자주 비어 있는" SSE 패턴에 유리하다.
+- 단, **이 이점은 전체 I/O 스택이 논블로킹일 때만 유효하다.** MySQL Connector/J(JDBC)처럼 blocking 드라이버를 사용하는 비즈니스 로직이 이벤트 루프 스레드에서 실행되면, 적은 수의 이벤트 루프 스레드가 블로킹되어 그 스레드가 담당하는 수천 개 connection이 전부 멈춘다. MVC의 스레드 풀 방식보다 오히려 더 위험하다.
+
+| 상황 | 권장 |
+|------|------|
+| R2DBC, reactive Redis 등 전 스택 논블로킹 | WebFlux |
+| MySQL Connector/J(JDBC) 등 blocking 드라이버 사용 | Spring MVC + `SseEmitter` |
+| WebFlux + blocking 드라이버를 억지로 혼용 | `Schedulers.boundedElastic()`으로 격리 필요, WebFlux의 이점이 희석됨 |
+
+- Spring MVC + `SseEmitter`는 내부적으로 servlet async + 컨테이너 워커 스레드를 쓰기 때문에 동시성 한계가 servlet 컨테이너 설정에 종속되지만, blocking 드라이버 기반 비즈니스에서는 이 쪽이 더 안전하고 현실적인 선택이다.
 
 **1) Spring MVC — `SseEmitter` 기반**
 
