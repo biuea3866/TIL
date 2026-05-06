@@ -1,84 +1,102 @@
 # [Java, Kotlin] ForkJoinPool
 
-- **Tags:** #Java #Kotlin #ForkJoinPool #ParallelStream #CompletableFuture #ExecutorService #CountDownLatch
+## ForkJoinPool?
 
 ---
-### 무엇을 배웠는가?
-ForkJoinPool은 큰 작업을 작은 작업으로 분할하고(분할 정복), 여러 워커 스레드가 병렬로 처리해 최종 결과를 합치는 방식이라는 점을 학습했습니다.
 
-또한 병렬 처리에서 자주 같이 언급되는 `ParallelStream`, `CompletableFuture`, `ExecutorService`, `CountDownLatch`가 각각 어떤 목적과 동작 특성을 가지는지 함께 정리했습니다.
+ForkJoinPool은 분할 정복 알고리즘을 이용한다. 큰 작업을 여러 작업으로 잘게 나누어 여러 스레드들이 병렬적으로 작업을 처리하고, 큰 작업을 완료하는 방법이다. 그리고 각 작업을 처리하는 워커들은 유휴 시간을 없애기 위해 큐에 대기중인 작업을 가져와 처리한다.
 
----
-### 왜 중요하고, 어떤 맥락인가?
-대량 데이터 처리나 다중 I/O 호출이 있는 상황에서 병렬 처리는 처리량과 응답 시간을 크게 좌우합니다.
+최초의 큰 하나의 작업을 Task라고 한다. ForkJoinPool에선 이 Task를 RecursiveTask(결과값 반환), RecursiveAction(결과값 반환 x)라는 추상 클래스를 이용하여 구현할 수 있고, 이들이 상속하는 인터페이스는 ForkJoinTask이다. 즉, ForkJoinTask를 이용하여 큰 작업을 정의하고, 병렬 처리를 수행할 수 있다.
 
-특히 Java 생태계에서는 내부적으로 `ForkJoinPool`(또는 유사한 스레드 풀 메커니즘)이 자주 사용되기 때문에, 단순 API 사용을 넘어서 스레드 분배 방식, 공용 풀 사용 시 부작용, 동기화 포인트를 이해하는 것이 중요합니다.
+## ForkJoinPool 동작 방식
 
 ---
-### 상세 내용
 
-#### 1. ForkJoinPool 개념
-ForkJoinPool은 `ForkJoinTask` 기반으로 동작합니다.
-
-- `RecursiveTask<T>`: 결과를 반환하는 작업
-- `RecursiveAction`: 결과를 반환하지 않는 작업
-
-핵심은 큰 작업을 쪼개고(`fork`), 각 작업 결과를 모으는(`join`) 구조입니다.
-
-#### 2. ForkJoinPool 동작 흐름
-![forkjoinpool_flow.png](../img/java_fork_join_pool/forkjoinpool_flow.png)
+![](./img/fjp_1.png)
 
 * JDK 21 기준
 
-1. `ForkJoinPool.invoke()` 호출로 시작됩니다.
-2. 내부 `poolSubmit`이 현재 스레드 상태를 보고 워커 큐 또는 외부 큐를 선택합니다.
-3. Task를 큐에 넣고 워커들이 실행을 시작합니다.
-4. `join`은 하위 작업 완료를 기다리고 결과를 합칩니다.
-5. `helpJoin`으로 대기 작업을 훔쳐서 처리(work stealing)하며 전체 완료를 앞당깁니다.
+1. ForkJoinPool의 invoke 메소드를 호출하면서 시작된다.
 
-#### 3. 병렬 처리 관련 도구들
+2. poolSubmit 함수를 호출하는데, 이 함수는 현재 스레드가 워커 스레드라면 자신의 작업 큐에 Task를 밀어넣거나 아니라면 외부 큐를 반환한다.
 
-##### 3-1. ParallelStream
-컬렉션을 `parallelStream()`으로 변환하면 병렬 처리가 수행되며, 기본적으로 `ForkJoinPool.commonPool()`을 사용합니다.
+3. 그리고 큐에 Task를 밀어 넣고, ForkJoinPool에 작업을 시작하라고 알린다.
 
-공용 풀을 공유하기 때문에 다른 병렬 작업과 스레드 경합이 생길 수 있습니다.
+4. join은 작업을 기다리고, 결과를 전달받는 작업이다.
 
-![parallel_stream.png](../img/java_fork_join_pool/parallel_stream.png)
+5. helpJoin 메서드를 호출하여 큐에 대기중인 작업을 꺼내어 수행하고, 루프를 돌면서 결과를 대기한다.
 
-1. `parallelStream()`으로 병렬 스트림 생성
-2. 내부 파이프라인 + `Spliterator`로 데이터 분할
-3. 최종 연산 시점에 `ForkJoinTask`로 병렬 실행
+## 다양한 병렬 처리 방법
 
-##### 3-2. CompletableFuture
-`runAsync`(반환값 없음), `supplyAsync`(반환값 있음)로 비동기 실행을 구성하고,
-`thenCompose`, `thenCombine`, `allOf`, `anyOf` 등으로 흐름을 조합합니다.
+---
 
-![completable_future.png](../img/java_fork_join_pool/completable_future.png)
+ForkJoinPool 외에도 병렬 처리를 할 수 있는 방법들이 존재한다.
 
-1. 비동기 작업 제출
-2. 실행 전략으로 ForkJoinPool 또는 단일 스레드 사용
-3. 조합/대기/후속 처리로 전체 플로우 구성
+### ParallelStream
 
-##### 3-3. ExecutorService
-사전에 만든 스레드 풀에 작업을 분배해 병렬 처리합니다.
-구현체(고정 풀, 캐시 풀 등)에 따라 스케줄링/자원 사용 특성이 달라집니다.
+컬렉션을 Stream 인터페이스로 변환하여 사용할 수 있다. 이 Stream 인터페이스는 병렬로 작업을 처리하고, 이 때 사용되는 병렬 로직은 ForkJoinPool이다.
 
-![executor_service.png](../img/java_fork_join_pool/executor_service.png)
+ForkJoinPool의 common pool을 이용하게 되는데, 다른 ForkJoinPool 작업들과 공통의 pool을 이용할 수 있으므로 의도치 않은 사이드 이펙트가 발생할 수 있다.
 
-##### 3-4. CountDownLatch
-여러 스레드의 작업 완료를 동기화할 때 사용합니다.
-카운트를 감소시키다가 0이 되면 `await()` 대기 스레드가 진행합니다.
+![](./img/fjp_2.png)
 
-![countdown_latch.png](../img/java_fork_join_pool/countdown_latch.png)
+1. parallelStream을 만들어 컬렉션을 병렬 스트림 객체로 변환한다.
 
-1. 목표 작업 수로 `CountDownLatch(count)` 생성
-2. 각 작업 완료 시 `countDown()` 호출
-3. 메인 스레드 `await()`로 전체 완료 시점 동기화
+2. Stream 인터페이스의 구현체인 ReferencePipeline은 병렬처리가 가능하고, 데이터 분할을 담당하는 Spliterator가 설정된다.
 
-#### 4. 예제
+3. forEach의 구현 evaluate 메서드가 실행되는데 최종 연산 시점에 ForkJoinTask를 생성하여 실행한다.
+
+### CompletableFuture
+
+CompletableFuture는 ForkJoinPool을 활용하거나 단일 스레드를 이용하여 작업을 실행한다. 그리고 runAsync(결과값 반환 x), supplyAsync(결과값 반환 o)을 통해서 콜백에 대한 결과를 얻을 수 있다.
+
+비동기는 작업에 대한 결과를 기다리지 않고, 다른 작업을 처리하는 방법이다. 이에 따라 우리가 원자성을 보장해야하는 처리라면 각 작업이 완료되었고, 안되었고를 알아야 할 필요가 있다. 이를 위한 CompletableFuture의 장치는 앞선 작업을 연관지어 조합하거나 독립적으로 실행 후 기다리는 방법(thenCompose, thenCombine), 전체 작업이 완료되었음을 기다리는 방법(allOf), 가장 빨리 끝난 결과 콜백을 실행하는 방법(anyOf)등이 존재한다.
+
+![](./img/fjp_3.png)
+
+1. runAsync or supplyAsync를 실행하여 비동기 처리를 수행한다.
+
+2. 비동기 처리를 위한 작업자 결정이 필요한데, ForkJoinPool이 현재 병렬처리가 가능하다면 해당 메커니즘을 사용하고, 아니라면 1개의 스레드를 생성한다.
+
+3. ForkJoinPool이라면 병렬 처리를 할당하고, 아니라면 생성한 스레드를 이용하여 1개의 독립적인 작업을 처리한다.
+
+### ExecutorService
+
+자바에서는 스레드를 미리 만들어 놓고(스레드 풀), 전달받은 작업들을 미리 생성된 스레드들에게 할당시킬 수 있다. 즉, 각 스레드들이 작업들을 병렬처리할 수 있음을 의미하며 어떤 구현체 스케줄러를 만드냐에 따라 작업 분배 방식이 달라진다.
+
+최상위 인터페이스인 Executor부터 시작해서 이를 상속받을수록 기능이 심화된다. ExecutorService의 경우 작업을 전달받아 관리하는 함수가 선언되어있고, AbstractExecutorService는 구현체들이 필요하다면 사용할 수 있게 일부 함수를 구현해두었다. 만약 필요하다면 실제 구현체들은 새로 오버라이드하여 자신의 로직에 맞게 함수를 구성할 수 있다.
+
+![](./img/fjp_4.png)
+
+### CountDownLatch
+
+CountDownLatch는 현재 실행중인 스레드들의 작업들이 완료될 때 까지 기다려주는 장치이다. 내부 중첩클래스인 Sync는 AbstractQueueSynchronizer를 구현하여 state를 원자적으로 감소시키면서 스레드들의 작업 완료 여부를 체크한다.
+
+이를 이용하여 병렬적으로 자바 스레드가 작업이 진행되더라도, 유저가 원하는 처리 갯수만큼으로 조절할 수 있고 일종의 백프레셔 혹은 세마포어로 동작한다.
+
+![](./img/fjp_5.png)
+
+1. 어느만큼의 일을 처리할 것인지 count로 CountDownLatch를 생성한다.
+
+2. 각 스레드들은 CountDownLatch 내부에 구현되어있는 countDown을 원하는 시점(작업)에 호출하여 state를 감소시킨다.
+
+3. await 메소드는 루프를 돌면서 state가 음수가 되면, 작업이 완료되었다고 판단하여 루프를 종료시킨다.
+
+## 예제
+
+---
+
 ```kotlin
 object ParallelProcessingExample {
 
+    // ========================================
+    // 1. ForkJoinPool - 분할 정복으로 합산
+    // ========================================
+
+    /**
+     * RecursiveTask를 이용한 분할 정복 합산
+     * 1~1,000,000 까지의 합을 작은 단위로 쪼개서 병렬 계산
+     */
     class SumTask(
         private val numbers: LongArray,
         private val start: Int,
@@ -111,61 +129,155 @@ object ParallelProcessingExample {
     }
 
     fun forkJoinPoolExample() {
+        println("\n=== 1. ForkJoinPool (분할 정복) 예제 ===")
+
         val numbers = LongArray(1_000_000) { it + 1L }
         val pool = ForkJoinPool()
-        val result = pool.invoke(SumTask(numbers, 0, numbers.size))
-        println("ForkJoinPool result: $result")
+
+        val time = measureTimeMillis {
+            val result = pool.invoke(SumTask(numbers, 0, numbers.size))
+            println("ForkJoinPool 합산 결과: $result")
+        }
+        println("소요 시간: ${time}ms")
+        println("parallelism: ${pool.parallelism}")
+
         pool.shutdown()
     }
 
+    // ========================================
+    // 2. ParallelStream - 병렬 스트림
+    // ========================================
+
     fun parallelStreamExample() {
+        println("\n=== 2. ParallelStream 예제 ===")
+
         val numbers = (1L..1_000_000L).toList()
-        val result = numbers.parallelStream()
-            .filter { it % 2 == 0L }
-            .mapToLong { it * it }
-            .sum()
-        println("ParallelStream result: $result")
+
+        // 순차 처리
+        val sequentialTime = measureTimeMillis {
+            val result = numbers.stream()
+                .filter { it % 2 == 0L }
+                .mapToLong { it * it }
+                .sum()
+            println("순차 처리 결과: $result")
+        }
+        println("순차 소요 시간: ${sequentialTime}ms")
+
+        // 병렬 처리
+        val parallelTime = measureTimeMillis {
+            val result = numbers.parallelStream()
+                .filter { it % 2 == 0L }
+                .mapToLong { it * it }
+                .sum()
+            println("병렬 처리 결과: $result")
+        }
+        println("병렬 소요 시간: ${parallelTime}ms")
+    }
+
+    // ========================================
+    // 3. CompletableFuture - 비동기 작업 조합
+    // ========================================
+
+    private fun simulateApiCall(apiName: String, delayMs: Long): String {
+        Thread.sleep(delayMs)
+        return "$apiName 응답 (${delayMs}ms)"
     }
 
     fun completableFutureExample() {
-        val userFuture = CompletableFuture.supplyAsync { "user" }
-        val orderFuture = CompletableFuture.supplyAsync { "order" }
-        CompletableFuture.allOf(userFuture, orderFuture).join()
-        println("${userFuture.get()}, ${orderFuture.get()}")
+        println("\n=== 3. CompletableFuture (비동기 조합) 예제 ===")
+
+        val time = measureTimeMillis {
+            val userFuture = CompletableFuture.supplyAsync {
+                simulateApiCall("유저 API", 300)
+            }
+            val orderFuture = CompletableFuture.supplyAsync {
+                simulateApiCall("주문 API", 500)
+            }
+            val paymentFuture = CompletableFuture.supplyAsync {
+                simulateApiCall("결제 API", 200)
+            }
+
+            // 3개 API 모두 완료 대기
+            CompletableFuture.allOf(userFuture, orderFuture, paymentFuture).join()
+
+            println("  ${userFuture.get()}")
+            println("  ${orderFuture.get()}")
+            println("  ${paymentFuture.get()}")
+        }
+        println("총 소요 시간: ${time}ms (순차면 1000ms, 병렬이라 ~500ms)")
+
+        // thenCombine 예제
+        println("\n--- thenCombine 예제 ---")
+        val result = CompletableFuture.supplyAsync { 10 }
+            .thenCombine(CompletableFuture.supplyAsync { 20 }) { a, b -> a + b }
+            .thenApply { "합산 결과: $it" }
+            .get()
+        println("  $result")
     }
+
+    // ========================================
+    // 4. ExecutorService - 스레드 풀
+    // ========================================
 
     fun executorServiceExample() {
+        println("\n=== 4. ExecutorService (스레드 풀) 예제 ===")
+
         val executor = Executors.newFixedThreadPool(4)
-        val futures = (1..8).map { idx ->
-            executor.submit(Callable { "Task-$idx" })
+
+        val time = measureTimeMillis {
+            val futures = (1..8).map { taskId ->
+                executor.submit(Callable {
+                    val threadName = Thread.currentThread().name
+                    Thread.sleep(200)
+                    "Task-$taskId 완료 [$threadName]"
+                })
+            }
+
+            futures.forEach { println("  ${it.get()}") }
         }
-        futures.forEach { println(it.get()) }
+        println("소요 시간: ${time}ms (8개 작업, 4스레드 → ~400ms)")
+
         executor.shutdown()
+        executor.awaitTermination(5, TimeUnit.SECONDS)
     }
 
+    // ========================================
+    // 5. CountDownLatch - 동기화 대기
+    // ========================================
+
     fun countDownLatchExample() {
+        println("\n=== 5. CountDownLatch (동기화) 예제 ===")
+
         val workerCount = 5
         val latch = CountDownLatch(workerCount)
-        repeat(workerCount) {
-            Thread.ofPlatform().start {
-                latch.countDown()
+        val totalResult = AtomicLong(0)
+
+        val time = measureTimeMillis {
+            repeat(workerCount) { i ->
+                Thread.ofPlatform().start {
+                    val partialResult = (i + 1) * 100L
+                    Thread.sleep((100..300).random().toLong())
+                    totalResult.addAndGet(partialResult)
+                    println("  Worker-$i 완료 (부분 결과: $partialResult)")
+                    latch.countDown()
+                }
             }
+
+            println("메인 스레드: 모든 워커 완료 대기 중...")
+            latch.await()
+            println("모든 워커 완료! 최종 결과: ${totalResult.get()}")
         }
-        latch.await()
-        println("all workers done")
+        println("소요 시간: ${time}ms")
     }
 }
 ```
 
----
-### 요약
-- ForkJoinPool은 분할 정복 + work stealing으로 병렬 처리 효율을 높입니다.
-- ParallelStream/CompletableFuture는 편리하지만 공용 풀 사용으로 스레드 경합이 생길 수 있습니다.
-- ExecutorService는 직접적인 풀 관리가 가능하고, CountDownLatch는 완료 시점 동기화에 유용합니다.
-- 병렬 처리 도구는 목적(CPU 연산, I/O, 조합, 동기화)에 맞춰 선택해야 안정적인 성능을 얻을 수 있습니다.
+## 참조
 
 ---
-### 참조
-- CompletableFuture: https://mangkyu.tistory.com/263
-- ExecutorService: https://mangkyu.tistory.com/259
-- ForkJoinPool: https://upcurvewave.tistory.com/653
+
+* CompletableFuture: [https://mangkyu.tistory.com/263](https://mangkyu.tistory.com/263)
+
+* ExecutorService: [https://mangkyu.tistory.com/259](https://mangkyu.tistory.com/259)
+
+* ForkJoinPool: [https://upcurvewave.tistory.com/653](https://upcurvewave.tistory.com/653)
