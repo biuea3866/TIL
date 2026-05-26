@@ -109,6 +109,64 @@ class CatalogTools(private val service: CatalogService) {
 
 MCP로 모든 API를 바꾸려고 하면 안 된다. OpenAPI를 대체하는 게 아니라, OpenAPI가 다루지 못하는 영역(LLM 호스트)을 다루는 채널이다.
 
+### 3.2 LLM 위치로 본 두 모드 — 자체 API vs MCP
+
+3.1에서 두 채널을 동시에 노출하는 코드 예시를 보였다. 두 채널의 본질적 차이는 "도구를 호출할지 말지를 결정하는 LLM이 어디에 있느냐"다.
+
+| 모드 | 자연어 해석 | 도구 호출 결정 | 도구 실행 | 응답 합성 | LLM 위치 |
+| --- | --- | --- | --- | --- | --- |
+| **자체 API** (`POST /chat`) | 우리 앱 | 우리 앱 ChatClient의 LLM | 우리 앱 (같은 JVM) | 우리 앱 LLM | **우리 프로세스 안** (Ollama, Claude API, OpenAI API 등) |
+| **MCP** (`/sse` + `/mcp/message`) | 외부 클라이언트 | **외부 LLM** | 우리 앱 (같은 JVM) | 외부 LLM | **외부 클라이언트 안** (Claude Desktop, Claude Code, Cursor 등) |
+
+MCP 모드에서는 우리 서버가 자연어를 절대 보지 않는다. 외부 LLM이 이미 가공한 JSON-RPC 명령만 받는다.
+
+```json
+{ "method": "tools/call", "params": { "name": "searchProducts", "arguments": { "color": "블랙" } } }
+```
+
+"재고 있는 블랙 추천해줘"라는 원문은 외부 클라이언트 안에서 LLM이 소비하고, 우리 서버에는 결과만 도달한다. 즉 외부 LLM이 우리 도구의 description과 inputSchema(`tools/list` 응답)를 읽어 자기 컨텍스트에 넣고, 사용자 자연어를 해석한 뒤 적절한 도구를 골라 `tools/call`로 보낸다.
+
+#### 운영 관점의 차이
+
+| 관점 | 자체 API (`/chat`) | MCP (`/sse`) |
+| --- | --- | --- |
+| LLM 비용 | 우리 부담 (로컬 자원 또는 API 키 사용량) | 외부 클라이언트가 자기 LLM 비용 부담 |
+| 모델 품질 | 우리가 고른 모델로 고정 | 사용자가 쓰는 더 강한 모델 그대로 활용 |
+| 호환성 | 우리 ChatClient가 지원하는 모델만 | MCP 프로토콜만 따르면 어떤 LLM이든 (Claude, GPT, Gemini, 로컬) |
+| 우리가 책임지는 범위 | LLM 운영 + 도구 + 프롬프트 + 응답 합성 | 도구 명세 + 권한만 |
+| 사용자 경험 | 브라우저에서 바로 채팅 | 사용자가 LLM 호스트(Claude Desktop 등)를 띄워 우리 도구를 메뉴로 골라 씀 |
+
+같은 `CatalogTools` 빈을 양쪽에서 공유하므로 도구 코드는 한 벌이지만, 호출 주체와 비용·품질·UX가 다르다.
+
+#### LLM이 없는 클라이언트가 MCP를 호출하면
+
+LLM 없이 자동화 스크립트나 `.http` 테스트 도구가 `tools/call`을 직접 만들어 보낼 수도 있다. 프로토콜 차원에서는 잘 동작하지만, **MCP의 부가가치(자연어 → 도구 자동 매핑, 도구 동적 발견)는 사라지고 그냥 무거운 RPC가 된다.**
+
+```python
+# LLM 없이 MCP 서버를 RPC API처럼 쓰는 예 — 매일 09시에 어제 주문 리포트 만들기
+import requests
+token = requests.post(".../auth/token",
+                      json={"clientId": "ops-llm", "clientSecret": "..."}).json()["accessToken"]
+# /sse로 sessionId 받고 tools/call(listOrders, status="결제완료")을 코드로 직접 호출
+```
+
+가능한 클라이언트 유형 네 가지를 정리하면 다음과 같다.
+
+| 클라이언트 | LLM | 입력 | 도구 호출 결정 |
+| --- | --- | --- | --- |
+| Claude Desktop / Cursor / Claude Code | 있음 (Anthropic Claude) | 자연어 | LLM이 동적으로 결정 |
+| 자체 LLM 통합 앱 (LangChain, 자체 에이전트) | 있음 (자체 선택) | 자연어 | LLM이 동적으로 결정 |
+| 자동화 스크립트 (cron, CI, 다른 백엔드) | 없음 | 코드 로직 | 개발자가 코드로 박아둠 |
+| 테스트 도구 (`.http`, Postman, curl) | 없음 | 사람이 작성 | 사람이 JSON-RPC body 직접 작성 |
+
+#### 그래서 어디에 무엇을 쓰는가
+
+- 클라이언트가 LLM이면 → **MCP**. 도구 정의만 하면 0-config로 자동 사용된다. 표준 호환성도 따라온다.
+- 클라이언트가 LLM이 아니면 → **REST 또는 gRPC**. SSE 핸드셰이크 + sessionId + JSON-RPC 봉투를 굳이 끌고 갈 이유가 없다.
+- 둘 다 필요하면 → **둘 다 노출한다.** 같은 도구 빈에서 양쪽 채널로 흘려보낸다. 우리 프로젝트가 그렇게 한다.
+
+MCP는 "LLM을 위한 USB-C"라는 비유가 가장 잘 맞는다. 표준 포트를 우리 앱에 달아두면 어떤 LLM 호스트든 꽂아서 우리 도구를 자기 도구처럼 쓴다. LLM 없는 시스템이 꽂는 건 가능하지만 제 용도가 아니다.
+
 ---
 
 ## 4. Spring AI MCP Server 셋업
@@ -537,6 +595,7 @@ async with sse_client(url="http://localhost:8080/sse",
 - 작은 로컬 모델(3B 이하)은 도구 콜링 신뢰도가 낮다. `llama3.2:3b` 정도면 데모는 되지만, 다중 인자나 한국어, 중첩 호출에서 실패가 잦다. 운영용으로는 30B 이상이거나 외부 API(Claude, GPT)를 쓴다.
 - JSON Schema의 고급 키워드는 LLM이 무시할 수 있다. `oneOf`, `anyOf`, `$ref` 같은 키워드는 일부 모델이 처리하지 않는다. 도구 시그니처는 평탄한 데이터 클래스로 단순하게 유지한다.
 - 상태를 바꾸는 도구에는 멱등키를 둔다. `placeOrder`, `cancelOrder`처럼 부수효과가 있는 도구는 LLM이 같은 요청을 두 번 보낼 수 있다(네트워크 재시도, 응답 토큰 분실 등). `idempotencyKey`를 인자로 받거나 서버 측에서 dedup이 필요하다.
+- `notifications/initialized`를 빼먹지 않는다. MCP 표준 핸드셰이크는 `initialize` → `notifications/initialized` → `tools/list` 순이다. 두 번째 단계를 보내지 않으면 서버가 `tools/list`에 응답하지 않고 POST는 조용히 멈춘 것처럼 보인다. Claude Desktop 같은 정식 클라이언트는 알아서 보내지만, 손으로 JSON-RPC를 만드는 자동화 스크립트나 `.http` 테스트는 이 단계를 잊기 쉽다.
 - MCP 표준은 아직 빠르게 변한다. streamable-HTTP 전송 추가, 인증 명세 정비 등 메이저 변경이 진행 중이다. starter 버전도 같이 따라가야 한다.
 
 ---
